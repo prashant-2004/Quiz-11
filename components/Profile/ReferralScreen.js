@@ -10,7 +10,7 @@ const ReferralScreen = () => {
         <View style={styles.coinsContainer}>
           {/* Add your image here */}
           <Image
-            source={require('../assets/tempcoin.png')} // Change this to the path of your image
+            source={require('../../assets/User/Profile/tempcoin.png')} // Change this to the path of your image
             style={styles.coinImage}
           />
            <Text style={styles.coinsNumber}>100 </Text>

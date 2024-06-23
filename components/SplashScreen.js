@@ -1,16 +1,16 @@
 import React, { useEffect } from 'react';
 import { View} from 'react-native';
 import * as Animatable from 'react-native-animatable';
-import { flipOutX } from './../node_modules/react-native-animatable/definitions/flippers';
-import { swing, rotate } from './../node_modules/react-native-animatable/definitions/attention-seekers';
-import { lightSpeedIn } from './../node_modules/react-native-animatable/definitions/lightspeed';
+// import { flipOutX } from './../node_modules/react-native-animatable/definitions/flippers';
+// import { swing, rotate } from './../node_modules/react-native-animatable/definitions/attention-seekers';
+// import { lightSpeedIn } from './../node_modules/react-native-animatable/definitions/lightspeed';
 
 const SplashScreen = ({ navigation }) => {
   useEffect(() => {
     // Perform any initialization or asynchronous tasks here
     // After the tasks are done, navigate to the next screen
     setTimeout(() => {
-      navigation.replace('Login'); // Replace 'Home' with your actual home screen name
+      navigation.replace('Main'); // Replace 'Main' with your actual Main screen name
     }, 3000); // Adjust the timeout based on your animation duration
   }, []);
 

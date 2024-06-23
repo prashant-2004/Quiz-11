@@ -26,7 +26,7 @@ const ProfileSection = ({ navigation }) => {
       <View style={styles.halfBackground} />
 
       <View style={styles.userDetails}>
-        <Image source={require('../assets/profile.png')} style={styles.avatar} />
+        <Image source={require('../../assets/User/Profile/profile.png')} style={styles.avatar} />
         <Text style={styles.userName}>{userName}</Text>
         <Text style={styles.userNumber}>{userNumber}</Text>
         <Text style={styles.userEmail}>{userEmail}</Text>

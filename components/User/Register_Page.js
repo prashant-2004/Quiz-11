@@ -1,29 +1,111 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ImageBackground } from 'react-native';
+import { View, Text, ToastAndroid, TextInput, TouchableOpacity, StyleSheet, Image, ImageBackground } from 'react-native';
+import 'firebase/auth';
+import {ref, set} from 'firebase/database';
+import { auth, database } from '../../Firebase-config.js';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import CustomToast from '../CustomToast';
 
 const Register_Page = ({navigation}) => {
   const [Name, setName] = useState('');
+  const [phoneNo, setPhoneNo] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const [darkMode, setDarkMode] = useState(false);
+  const [showToast, setShowToast] = useState(false);
+  const [message, setMessage] = useState('');
+  
+  const [emailError, setEmailError] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const [confPasswordError, setConfPasswordError] = useState('');
+  const [phoneNoError, setPhoneNoError] = useState('');
+  const [nameError, setNameError] = useState('');
   
   // AFTER DARK-MODE BUTTON CLICKED..-->>
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
 
-  const handleRegister = () => {
-    // Perform registration logic here
-    console.log('Registration Details:', { Name, email, password, confirmPassword });
-    // You can send the registration details to your server or perform any other necessary actions.
+  const validateForm = () => {
+    let isValid = true;
+
+    if (!email.trim()) {
+      setEmailError('Email is required');
+      isValid = false;
+    } else {
+      setEmailError('');
+    }
+
+    if (!password.trim()) {
+      setPasswordError('Password is required');
+      isValid = false;
+    } else {
+      setPasswordError('');
+    }
+
+    if (!confirmPassword.trim()) {
+      setConfPasswordError("Password Doesn't Match");
+      isValid = false;
+    } else {
+      setConfPasswordError('');
+    }
+
+    if (!phoneNo.trim()) {
+      setPhoneNoError('Phone number is required');
+      isValid = false;
+    } else {
+      setPhoneNoError('');
+    }
+
+    if (!Name.trim()) {
+      setNameError('Name is required');
+      isValid = false;
+    } else {
+      setNameError('');
+    }
+
+    return isValid;
   };
 
-  const handleLoginLink =()=>{
-    navigation.navigate('Login');
+  async function handleRegister() {
+    if (validateForm())
+    {
+      try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const uid = userCredential.user.uid;
+        const userRef = ref(database, '/users/' + uid);
+    
+        await set(userRef, {
+          name: Name,
+          phoneNo: phoneNo,
+          email: email,
+        });
+    
+        console.log('User registered and data saved!');
+        setShowToast(true);
+        setTimeout(() => setShowToast(false), 1000);
+        setMessage("You Registered Successfullly...!!");
+        // ToastAndroid.show('You Registered Successfullly...!!', ToastAndroid.SHORT);
+        navigation.navigate('Login');
+        setName('');
+        setPhoneNo('');
+        setEmail('');
+        setPassword('');
+        setConfirmPassword('');
+      } catch (error) {
+        console.error('Registration failed:', error.message);
+      }
+    }
+  }
+  
+  const handleLoginLink = () => {
+    navigation.navigate("Login");
   };
+  
   
   return (
     <ImageBackground
@@ -51,31 +133,48 @@ const Register_Page = ({navigation}) => {
         {/* Name Field */}
         <TextInput
         style={[styles.input, { backgroundColor: !darkMode ? '#333' : '#eee', color: darkMode ? '#000' : '#fff' }]}
-        placeholder="Name"
+        placeholder="Enter Name"
         placeholderTextColor="#bbb"
         onChangeText={(text) => setName(text)}
         value={Name} />
+        {nameError ? <Text style={styles.errorText}>{nameError}</Text> : null}
 
+
+        <TextInput
+        style={[styles.input, { backgroundColor: !darkMode ? '#333' : '#eee', color: darkMode ? '#000' : '#fff' }]}
+        placeholder="Enter Mobile No."
+        placeholderTextColor="#bbb" 
+        onChangeText={(text) => setPhoneNo(text)}
+        value={phoneNo}
+        keyboardType="number-pad" 
+        />
+        {phoneNoError ? <Text style={styles.errorText}>{phoneNoError}</Text> : null}
+
+        
         {/* Email Field */}
         <TextInput
         style={[styles.input, { backgroundColor: !darkMode ? '#333' : '#eee', color: darkMode ? '#000' : '#fff' }]}
-        placeholder="Mobile No."
+        placeholder="Enter Email-ID"
         placeholderTextColor="#bbb" 
         onChangeText={(text) => setEmail(text)}
         value={email}
-        keyboardType="number-pad" 
+        keyboardType="email-address"
         />
+         {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
+
         
         {/* Password Field */}
         <View style={styles.inputContainer}>
         <TextInput
         style={[styles.input, { backgroundColor: !darkMode ? '#333' : '#eee', color: darkMode ? '#000' : '#fff' }]}
-        placeholder="Password"
+        placeholder="Enter Password"
         placeholderTextColor="#bbb" 
         onChangeText={(text) => setPassword(text)}
         value={password}
         secureTextEntry={!showPassword}
         />
+        {passwordError ? <Text style={styles.errorText}>{passwordError}</Text> : null}
+
 
         <TouchableOpacity
             style={styles.showPasswordButton}
@@ -97,6 +196,8 @@ const Register_Page = ({navigation}) => {
         value={confirmPassword}
         secureTextEntry={!showConfirmPassword}
         />
+        {confPasswordError ? <Text style={styles.errorText}>{confPasswordError}</Text> : null}
+
 
       <TouchableOpacity
             style={styles.showPasswordButton}
@@ -118,6 +219,8 @@ const Register_Page = ({navigation}) => {
           Log in
           </Text>
         </TouchableOpacity>
+
+        <CustomToast message={message} isVisible={showToast} duration={1000} />
 
       </View>
 
@@ -227,6 +330,12 @@ const styles = StyleSheet.create({
     color: 'black',
     fontSize: 14,
   },
+  errorText: {
+    width: '100%',
+    textAlign: 'left',
+    color: 'red',
+    marginBottom: 5,
+  }
 });
 
 export default Register_Page;

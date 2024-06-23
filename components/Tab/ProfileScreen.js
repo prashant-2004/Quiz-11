@@ -1,48 +1,88 @@
 //02-03-2024 = OriginalProfileScreen
 // ProfileScreen.js
-import React, { useState } from 'react';
+import React, { useState,useEffect,useContext } from 'react';
 import { View, TouchableOpacity, Image, StyleSheet, Text } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-
+import { signOut } from 'firebase/auth';
+import { auth, database } from '../../Firebase-config.js';
+import { AuthContext } from '../../routes/AuthProvider';
+import { get, ref, set } from 'firebase/database';
 
 const ProfileScreen = ({ navigation }) => {
-  const handleHeaderButtonClick = () => {
-    console.log('Header button clicked');
-  };
 
+  const { user } = useContext(AuthContext);
+  const [userData, setUserData] = useState({
+    name: '',
+    phoneNo: '',
+    email: '',
+  });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      const userRef = ref(database, 'users/' + user.uid);
+
+      get(userRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            setUserData(snapshot.val());
+          } else {
+            console.log("No data available");
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching user data:", error);
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    }
+  }, [user]);
+
+  
   const handleProfileButtonClick = () => {
     console.log('Profile button clicked');
   };
 
   const walletButtonClick = (walletPage) => {
     console.log(`${walletPage} clicked`);
-    navigation.navigate('WalletScreen');
+    navigation.navigate('Wallet');
   };
-  const transactionButtonClick = (transectionPage) => {
-    console.log(`${transectionPage} clicked`);
-    navigation.navigate('TransectionScreen');
+  const transactionButtonClick = () => {
+    console.log(`transactionPage clicked`);
+    navigation.navigate('TransactionScreen');
   }; 
   const referralButtonClick = (referralPage) => {
     console.log(`${referralPage} clicked`);
-    navigation.navigate('ReferralScreen');
+    navigation.navigate('Referral');
   }; 
   const helpButtonClick = (helpPage) => {
     console.log(`${helpPage} clicked`);
-    navigation.navigate('HelpScreen');
+    navigation.navigate('Help');
   };
-   const aboutUsFooterButtonClick = (aboutUsPage) => {
+   const handleAboutUs = (aboutUsPage) => {
     console.log(`${aboutUsPage} clicked`);
-    navigation.navigate('AboutUsScreen');
+    navigation.navigate('AboutUs');
   };
   const handleArrowButtonClick = () => {
     // Navigate to EditProfile screen
     navigation.navigate('EditProfile');
   };
 
-  // State to store the user name
-  const [userName, setUserName] = useState('Vaibhav Nirgude');
-  const [userNumber, setUserNumber] = useState('9529695968'); 
+  const handleLogout = () => {
+    signOut(auth).then(() => {
+      console.log('User signed out successfully');
+      navigation.reset({
+        index: 0,
+        routes: [{ name: 'Login' }],
+      });
+    }).catch((error) => {
+      console.error('Sign out error', error);
+    });
+  };
 
+  // State to store the user name
+  
   React.useLayoutEffect(() => {
     navigation.setOptions({
       title: 'Account',
@@ -55,6 +95,7 @@ const ProfileScreen = ({ navigation }) => {
   }, [navigation]);
 
   return (
+    <>
     <View style={styles.container}>
       {/* User Details Profile Card */}
       <View style={styles.shadowBox}>
@@ -63,8 +104,8 @@ const ProfileScreen = ({ navigation }) => {
         </TouchableOpacity>
         <View style={styles.textContainer}>
           {/* Display the username dynamically */}
-          <Text style={styles.textAfterImage}>{userName}</Text>
-          <Text style={styles.textBelowImage}>{userNumber}</Text>
+          <Text style={styles.textAfterImage}>{userData.name}</Text>
+          <Text style={styles.textBelowImage}>{userData.phoneNo}</Text>
           {/* Navigate to the new page on TouchableOpacity press */}
           <TouchableOpacity
             onPress={handleArrowButtonClick}
@@ -86,7 +127,7 @@ const ProfileScreen = ({ navigation }) => {
   <View style={styles.itemContainer}>
     <Image source={require('../../assets/User/Profile/Transaction.png')} style={styles.shadowBox1Image} />
     <Text style={styles.textBesideImage}>Transaction</Text>
-    <TouchableOpacity onPress={() => transactionButtonClick('transectionPage')}>
+    <TouchableOpacity onPress={() => transactionButtonClick()}>
           <Image source={require('../../assets/User/Profile/arrowHead.png')} style={styles.shadowBox1ImageButton2} />
         </TouchableOpacity>
   </View>
@@ -107,7 +148,7 @@ const ProfileScreen = ({ navigation }) => {
   <View style={styles.itemContainer}>
     <Image source={require('../../assets/User/Profile/AboutUs.png')} style={styles.shadowBox1Image} />
     <Text style={styles.textBesideImage}>About Us</Text>
-    <TouchableOpacity onPress={() => aboutUsFooterButtonClick('aboutUsPage')}>
+    <TouchableOpacity onPress={() => handleAboutUs('aboutUsPage')}>
           <Image source={require('../../assets/User/Profile/arrowHead.png')} style={styles.shadowBox1ImageButton5} />
         </TouchableOpacity>
   </View>
@@ -116,11 +157,12 @@ const ProfileScreen = ({ navigation }) => {
 
       {/* Sign out button */}
       <View style={styles.content}>
-      <TouchableOpacity onPress={() => handleFooterButtonClick('Sign Out')}>
+      <TouchableOpacity onPress={() => handleLogout('Sign Out')}>
       <Text style={styles.signOutButton}>Sign Out</Text>
         </TouchableOpacity>
       </View> 
     </View>
+    </>
   );
 };
 

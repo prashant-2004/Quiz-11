@@ -1,7 +1,9 @@
 import Navigation from './routes/Navigation';
 
-export default function App() {
+const App = () => {
   return (
     <Navigation/>
   );
 };
+
+export default App;

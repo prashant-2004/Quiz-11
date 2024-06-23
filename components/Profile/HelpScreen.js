@@ -95,7 +95,7 @@ const HelpScreen = () => {
           </View>
           
           {/* Image in the center */}
-          <Image source={require('./Help1.jpg')} style={styles.assistanceImage} />
+          <Image source={require('../../assets/User/Profile/help.png')} style={styles.assistanceImage} />
         </View>
         {/* Additional text below "Contact Us" button */}
         {showContactUsText && (
